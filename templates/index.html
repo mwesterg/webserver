@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>Dashboard C4i</title>
@@ -20,6 +21,7 @@
     .navbar.bg-primary {
       background: linear-gradient(to right, #2c3e50 10%, #ffffff 100%) !important;
     }
+
     .navbar .navbar-brand {
       color: #fff !important;
     }
@@ -29,6 +31,7 @@
       height: 40px;
       margin-left: 10px;
     }
+
     .navbar-logo-mod {
       transform: scale(0.8);
       transform-origin: center;
@@ -40,6 +43,7 @@
       border: 1px solid #333;
       color: #f0f0f0;
     }
+
     .card-header {
       background-color: #2b2b2b !important;
       border-bottom: 1px solid #444;
@@ -55,13 +59,16 @@
       background: #333;
       position: relative;
     }
+
     .battery-level {
       width: 100%;
-      background-color: #28a745; /* Keep the green level */
+      background-color: #28a745;
+      /* Keep the green level */
       position: absolute;
       bottom: 0;
       transition: height 0.5s ease;
     }
+
     .battery-text {
       position: absolute;
       width: 100%;
@@ -69,7 +76,7 @@
       transform: translateY(-50%);
       font-weight: bold;
       color: #fff;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
     }
 
     /* Chart containers on dark background */
@@ -94,16 +101,19 @@
       align-items: center;
       gap: 10px;
     }
+
     .switch-label {
       font-size: 1.2rem;
       font-weight: 500;
     }
+
     .form-check-input {
       transform: scale(1.5);
       margin-right: 10px;
       background-color: #444;
       border: 1px solid #777;
     }
+
     .form-check-input:checked {
       transform: scale(1.5);
       background-color: #0056b3;
@@ -120,6 +130,7 @@
       outline: none;
       margin-top: 10px;
     }
+
     /* Slider thumb for WebKit (Chrome, Safari, etc.) */
     input[type=range].form-range::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -132,6 +143,7 @@
       border: 2px solid #fff;
       margin-top: -5px;
     }
+
     /* Slider thumb for Firefox (Gecko) */
     input[type=range].form-range::-moz-range-thumb {
       width: 20px;
@@ -143,6 +155,7 @@
     }
   </style>
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
     <div class="container">
@@ -151,7 +164,8 @@
       <!-- Logos on the right -->
       <div class="ms-auto d-flex align-items-center">
         <div class="logo-container navbar-logo-mod">
-          <img src="{{ url_for('static', filename='content/logo_entel_para_prueba_azul.png') }}" alt="Logo 1" class="navbar-logo">
+          <img src="{{ url_for('static', filename='content/logo_entel_para_prueba_azul.png') }}" alt="Logo 1"
+            class="navbar-logo">
         </div>
         <div class="logo-container">
           <img src="{{ url_for('static', filename='content/nestle.png') }}" alt="Logo 2" class="navbar-logo">
@@ -162,7 +176,7 @@
       </div>
     </div>
   </nav>
-  
+
   <div class="container my-5">
     <div class="row g-4">
       <!-- Device Control Card -->
@@ -176,7 +190,8 @@
               <div class="mb-3 d-flex align-items-center justify-content-center">
                 <label for="toggle" class="me-3 fw-bold">Device Control:</label>
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="toggle" name="toggle" {% if switch_value == 1 %}checked{% endif %}>
+                  <input class="form-check-input" type="checkbox" id="toggle" name="toggle" {% if switch_value==1
+                    %}checked{% endif %}>
                 </div>
                 <span id="switchState" class="ms-3">{% if switch_value == 1 %}On{% else %}Off{% endif %}</span>
               </div>
@@ -201,14 +216,14 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Update Info Button Row (Outside the Device Control Card) -->
     <div class="row mt-4">
       <div class="col-12 text-center">
         <button onclick="window.location.reload();" class="btn btn-secondary">Update Info</button>
       </div>
     </div>
-    
+
     <!-- Ambient Sensor Data Card with Graphs -->
     <div class="card shadow-sm mt-4">
       <div class="card-header">
@@ -218,7 +233,8 @@
         <!-- Slider to set the number of historical points -->
         <div class="mb-3 slider-container">
           <label for="historySlider" class="form-label">Historical Points to Display:</label>
-          <input type="range" class="form-range" min="1" max="50" step="1" id="historySlider" value="10" oninput="updateHistoryValue(this.value)">
+          <input type="range" class="form-range" min="1" max="50" step="1" id="historySlider" value="10"
+            oninput="updateHistoryValue(this.value)">
           <div class="text-center"><span id="historyValue">10</span></div>
         </div>
         <div class="row text-center">
@@ -249,14 +265,14 @@
         </div>
       </div>
     </div>
-    
+
   </div>
-  
+
   <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Update the switch label dynamically
-    document.getElementById("toggle").addEventListener("change", function() {
+    document.getElementById("toggle").addEventListener("change", function () {
       document.getElementById("switchState").innerText = this.checked ? "On" : "Off";
     });
 
@@ -264,7 +280,7 @@
     var tempHistory = {{ amb_history_temperature | tojson }};
     var humHistory = {{ amb_history_humidity | tojson }};
     var presHistory = {{ amb_history_pressure | tojson }};
-    
+
     // Default number of points to display
     var n = 10;
 
@@ -288,11 +304,11 @@
     const tempChart = new Chart(ctxTemp, {
       type: 'line',
       data: {
-        labels: Array.from({length: n}, (_, i) => i + 1),
+        labels: Array.from({ length: n }, (_, i) => i + 1),
         datasets: [{
           label: 'Temperature (°C)',
-            data: getLastNValues(tempHistory, n),
-            borderColor: 'coral',
+          data: getLastNValues(tempHistory, n),
+          borderColor: 'coral',
           fill: false,
           tension: 0.1,
           pointRadius: 2
@@ -301,18 +317,25 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { x: { display: false } }
+        scales: {
+          x: { display: false },
+          y: {
+            min: -10,
+            max: 50,
+            ticks: { color: '#f0f0f0' }
+          }
+        }
       }
     });
 
     const humChart = new Chart(ctxHum, {
       type: 'line',
       data: {
-        labels: Array.from({length: n}, (_, i) => i + 1),
+        labels: Array.from({ length: n }, (_, i) => i + 1),
         datasets: [{
           label: 'Humidity (%)',
           data: getLastNValues(humHistory, n),
-            borderColor: 'darkcyan',
+          borderColor: 'darkcyan',
           fill: false,
           tension: 0.1,
           pointRadius: 2
@@ -321,18 +344,25 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { x: { display: false } }
+        scales: {
+          x: { display: false },
+          y: {
+            min: 0,
+            max: 100,
+            ticks: { color: '#f0f0f0' }
+          }
+        }
       }
     });
 
     const presChart = new Chart(ctxPres, {
       type: 'line',
       data: {
-        labels: Array.from({length: n}, (_, i) => i + 1),
+        labels: Array.from({ length: n }, (_, i) => i + 1),
         datasets: [{
           label: 'Pressure (hPa)',
           data: getLastNValues(presHistory, n),
-            borderColor: 'MediumSeaGreen',
+          borderColor: 'MediumSeaGreen',
           fill: false,
           tension: 0.1,
           pointRadius: 2
@@ -341,14 +371,21 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: { x: { display: false } }
+        scales: {
+          x: { display: false },
+          y: {
+            min: 900,
+            max: 1100,
+            ticks: { color: '#f0f0f0' }
+          }
+        }
       }
     });
 
     // Function to update charts when slider changes
     function updateCharts(newN) {
       n = newN;
-      let newLabels = Array.from({length: n}, (_, i) => i + 1);
+      let newLabels = Array.from({ length: n }, (_, i) => i + 1);
       tempChart.data.labels = newLabels;
       tempChart.data.datasets[0].data = getLastNValues(tempHistory, n);
       tempChart.update();
@@ -369,4 +406,5 @@
     }
   </script>
 </body>
+
 </html>
