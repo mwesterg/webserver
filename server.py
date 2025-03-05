@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 # Global variables to store sensor data
 switch_value = 0  # 0 (off) or 1 (on)
+updated_switch_value = 0  # Updated switch value
 mc_data = {"battery": 70, "status": "Unknown"}  # Microcontroller data
 amb_data = {"temperature": 0, "humidity": 0, "pressure": 0}  # Ambient sensor data
 
@@ -36,9 +37,10 @@ def on_connect(client, userdata, flags, rc, properties=None):
     # Subscribe to topics for receiving data
     client.subscribe(TOPIC_MICROCONTROLLER)
     client.subscribe(TOPIC_AMB_VARS)
+    client.subscribe(TOPIC_USER_VARIABLES)
 
 def on_message(client, userdata, msg):
-    global mc_data, amb_data, amb_history_temperature, amb_history_humidity, amb_history_pressure
+    global updated_switch_value, mc_data, amb_data, amb_history_temperature, amb_history_humidity, amb_history_pressure
     try:
         payload = msg.payload.decode("utf-8")
         data = json.loads(payload)
@@ -58,9 +60,11 @@ def on_message(client, userdata, msg):
             amb_history_temperature.append(new_temp)
             amb_history_humidity.append(new_hum)
             amb_history_pressure.append(new_pres)
+        elif msg.topic == TOPIC_USER_VARIABLES:
+            updated_switch_value = data.get("switch", updated_switch_value)
         
         # Send the timestamp with the data
-        socketio.emit('mqtt_update', {'data': 'new_data', 'timestamp': timestamp})
+        socketio.emit('mqtt_update', {'data': 'new_data', 'timestamp': timestamp,'switch': updated_switch_value})
 
     except Exception as e:
         print("Error processing MQTT message:", e)
@@ -75,8 +79,14 @@ mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
 def mqtt_loop():
-    mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    mqtt_client.loop_forever()
+    try:
+        mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    except Exception as e:
+        print("Error connecting to MQTT broker:", e)
+        print("defaulting to connect to local server")
+        mqtt_client.connect("0.0.0.0", 1883, 60) # connect to local broker
+    finally:
+        mqtt_client.loop_forever()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
