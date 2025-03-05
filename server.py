@@ -49,6 +49,7 @@ def on_message(client, userdata, msg):
             mc_data["battery"] = data.get("battery", mc_data["battery"])
             mc_data["status"] = data.get("status", mc_data["status"])
             print("Updated microcontroller data:", mc_data)
+            socketio.emit('mqtt_timestamp_update', {'timestamp': timestamp})
         elif msg.topic == TOPIC_AMB_VARS:
             new_temp = data.get("temperature", float('nan'))
             new_hum = data.get("humidity", float('nan'))
@@ -60,12 +61,12 @@ def on_message(client, userdata, msg):
             amb_history_temperature.append(new_temp)
             amb_history_humidity.append(new_hum)
             amb_history_pressure.append(new_pres)
+            # Send the timestamp with the data
+            socketio.emit('mqtt_timestamp_update', {'timestamp': timestamp})
         elif msg.topic == TOPIC_USER_VARIABLES:
             updated_switch_value = data.get("switch", updated_switch_value)
-        
-        # Send the timestamp with the data
-        socketio.emit('mqtt_update', {'data': 'new_data', 'timestamp': timestamp,'switch': updated_switch_value})
-
+            # Send the timestamp with the data
+            socketio.emit('mqtt_switch_update', {'switch': updated_switch_value})
     except Exception as e:
         print("Error processing MQTT message:", e)
 

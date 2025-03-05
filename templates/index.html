@@ -192,7 +192,8 @@
               <div class="mb-3 d-flex align-items-center justify-content-center">
                 <label for="toggle" class="me-3 fw-bold">Device Control:</label>
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="toggle" name="toggle" {% if switch_value==1%}checked{% endif %}>
+                  <input class="form-check-input" type="checkbox" id="toggle" name="toggle" {% if
+                    switch_value==1%}checked{% endif %}>
                 </div>
                 <span id="switchState" class="ms-3">{% if switch_value == 1 %}On{% else %}Off{% endif %}</span>
               </div>
@@ -282,19 +283,18 @@
 
       var socket = io(); // Initialize the Socket.IO connection
 
-      socket.on('mqtt_update', function (data) {
-        console.log('MQTT update received');
+      socket.on('mqtt_timestamp_update', function (data) {
         if (data.timestamp) {
-          console.log('updating timestamp');
           document.getElementById("lastTimestamp").innerText = data.timestamp;
         }
-        if (data.switch) {
-          console.log('updating control switch');
-          if (data.switch !== undefined) {
-            document.getElementById("toggle").checked = data.switch;  // Turn the switch on
-          }
-        }
-        // window.location.reload();
+      });
+
+      socket.on('mqtt_switch_update', function (data) {
+        var switchElement = document.getElementById("toggle");
+
+        switchElement.checked = data.switch === 1;
+        document.getElementById("switchState").innerText = switchElement.checked ? "On" : "Off";
+
       });
     };
 
