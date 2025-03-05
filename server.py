@@ -1,12 +1,9 @@
 import threading
 import json
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO
 import paho.mqtt.client as mqtt
 
 app = Flask(__name__)
-# Initialize SocketIO with the Flask app
-socketio = SocketIO(app)
 
 # Global variables to store sensor data
 switch_value = 0  # 0 (off) or 1 (on)
@@ -18,14 +15,9 @@ amb_history_temperature = []
 amb_history_humidity = []
 amb_history_pressure = []
 
-# MQTT configuration for HiveMQ Cloud
-# (Local broker configuration commented out)
-# MQTT_BROKER = "raspiwester.local"
-# MQTT_PORT = 1883
+# MQTT configuration for HiveMQ Cloud (or other broker)
 MQTT_BROKER = "152.74.19.95"
 MQTT_PORT = 10273
-# MQTT_BROKER = "f877a15c837b4a929e1c0cdd41b381e5.s1.eu.hivemq.cloud"
-# MQTT_PORT = 8883
 MQTT_USER = "wester"
 MQTT_PASS = "2005483"
 
@@ -36,7 +28,7 @@ TOPIC_AMB_VARS = "myapp/microcontroller/amb_vars"        # Ambient sensor topic
 
 def on_connect(client, userdata, flags, rc, properties=None):
     print("Connected to MQTT broker with result code " + str(rc))
-    # Subscribe to custom topics
+    # Subscribe to topics for receiving data
     client.subscribe(TOPIC_MICROCONTROLLER)
     client.subscribe(TOPIC_AMB_VARS)
 
@@ -63,21 +55,15 @@ def on_message(client, userdata, msg):
             amb_history_temperature.append(new_temp)
             amb_history_humidity.append(new_hum)
             amb_history_pressure.append(new_pres)
-        # Notify clients that new data has been received.
-        # The event "mqtt_update" will trigger a page reload on the client.
-        socketio.emit('mqtt_update', {'data': 'new_data'}, broadcast=True)
     except Exception as e:
         print("Error processing MQTT message:", e)
 
-# Setup MQTT client with the MQTT v5 callback API (if supported)
+# Setup MQTT client using the MQTT v5 callback API if supported
 mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 try:
     mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
 except Exception as e:
     print("No user credentials provided, skipping login")
-# For future secure connections, enable TLS when ready:
-# mqtt_client.tls_set()            
-# mqtt_client.tls_insecure_set(True)
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
@@ -89,7 +75,7 @@ def mqtt_loop():
 def index():
     global switch_value
     if request.method == "POST":
-        # Set switch value based on the form input
+        # Update the switch value based on form input
         switch_value = 1 if request.form.get("toggle") == "on" else 0
         payload = json.dumps({"switch": switch_value})
         print("Publishing switch value:", payload)
@@ -109,5 +95,5 @@ if __name__ == "__main__":
     mqtt_thread.daemon = True
     mqtt_thread.start()
     
-    # Run Flask with SocketIO instead of the regular app.run
-    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+    # Run the Flask app (no Socket.IO auto-reload; page reload is manual)
+    app.run(debug=True, host="0.0.0.0", port=5000)
