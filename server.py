@@ -1,6 +1,8 @@
 import threading
 import json
+import datetime
 from flask import Flask, render_template, request
+from flask_socketio import SocketIO
 import paho.mqtt.client as mqtt
 
 app = Flask(__name__)
@@ -26,6 +28,9 @@ TOPIC_USER_VARIABLES = "myapp/user/control"          # For publishing switch upd
 TOPIC_MICROCONTROLLER = "myapp/microcontroller/status"   # For receiving microcontroller data
 TOPIC_AMB_VARS = "myapp/microcontroller/amb_vars"        # Ambient sensor topic
 
+# Initialize SocketIO with the Flask app
+socketio = SocketIO(app)  # This is where SocketIO is defined
+
 def on_connect(client, userdata, flags, rc, properties=None):
     print("Connected to MQTT broker with result code " + str(rc))
     # Subscribe to topics for receiving data
@@ -37,13 +42,12 @@ def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode("utf-8")
         data = json.loads(payload)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Get current timestamp
         if msg.topic == TOPIC_MICROCONTROLLER:
-            # Update microcontroller data (battery and status)
             mc_data["battery"] = data.get("battery", mc_data["battery"])
             mc_data["status"] = data.get("status", mc_data["status"])
             print("Updated microcontroller data:", mc_data)
         elif msg.topic == TOPIC_AMB_VARS:
-            # Update ambient sensor values: temperature, humidity, and pressure
             new_temp = data.get("temperature", float('nan'))
             new_hum = data.get("humidity", float('nan'))
             new_pres = data.get("pressure", float('nan'))
@@ -51,10 +55,13 @@ def on_message(client, userdata, msg):
             amb_data["humidity"] = new_hum
             amb_data["pressure"] = new_pres
             print("Updated ambient sensor data:", amb_data)
-            # Append new values to history lists
             amb_history_temperature.append(new_temp)
             amb_history_humidity.append(new_hum)
             amb_history_pressure.append(new_pres)
+        
+        # Send the timestamp with the data
+        socketio.emit('mqtt_update', {'data': 'new_data', 'timestamp': timestamp})
+
     except Exception as e:
         print("Error processing MQTT message:", e)
 
@@ -96,4 +103,6 @@ if __name__ == "__main__":
     mqtt_thread.start()
     
     # Run the Flask app (no Socket.IO auto-reload; page reload is manual)
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # app.run(debug=True, host="0.0.0.0", port=5000)
+    # Run Flask with SocketIO instead of the regular app.run
+    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
