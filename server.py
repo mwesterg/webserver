@@ -37,7 +37,6 @@ def on_connect(client, userdata, flags, rc, properties=None):
     # Subscribe to topics for receiving data
     client.subscribe(TOPIC_MICROCONTROLLER)
     client.subscribe(TOPIC_AMB_VARS)
-    client.subscribe(TOPIC_USER_VARIABLES)
 
 def on_message(client, userdata, msg):
     global updated_switch_value, mc_data, amb_data, amb_history_temperature, amb_history_humidity, amb_history_pressure
@@ -63,10 +62,7 @@ def on_message(client, userdata, msg):
             amb_history_pressure.append(new_pres)
             # Send the timestamp with the data
             socketio.emit('mqtt_timestamp_update', {'timestamp': timestamp})
-        elif msg.topic == TOPIC_USER_VARIABLES:
-            updated_switch_value = data.get("switch", updated_switch_value)
-            # Send the timestamp with the data
-            socketio.emit('mqtt_switch_update', {'switch': updated_switch_value})
+            
     except Exception as e:
         print("Error processing MQTT message:", e)
 
@@ -97,6 +93,8 @@ def index():
         switch_value = 1 if request.form.get("toggle") == "on" else 0
         payload = json.dumps({"switch": switch_value})
         print("Publishing switch value:", payload)
+        # Send the timestamp with the data
+        socketio.emit('mqtt_switch_update', {'switch': updated_switch_value})
         mqtt_client.publish(TOPIC_USER_VARIABLES, payload, qos=1, retain=True)
     return render_template("index.html", 
                            switch_value=switch_value, 
