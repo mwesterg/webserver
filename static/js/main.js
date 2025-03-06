@@ -1,9 +1,20 @@
 // Establish a socket connection using Socket.IO
 var socket = io();
-socket.on('mqtt_update', function(data) {
+
+socket.on('mqtt_timestamp_update', function(data) {
   console.log('MQTT update received, reloading page');
-  window.location.reload();
+  if (data.timestamp) {
+    document.getElementById("lastTimestamp").innerText = data.timestamp;
+  }
 });
+
+socket.on('mqtt_switch_update', function (data) {
+    var switchElement = document.getElementById("toggle");
+
+    switchElement.checked = data.switch === 1;
+    document.getElementById("switchState").innerText = switchElement.checked ? "On" : "Off";
+
+  });
 
 // Update the switch label dynamically
 document.getElementById("toggle").addEventListener("change", function() {
