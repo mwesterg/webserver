@@ -33,63 +33,84 @@ const ctxHum = document.getElementById('humChart').getContext('2d');
 const ctxPres = document.getElementById('presChart').getContext('2d');
 
 const tempChart = new Chart(ctxTemp, {
-  type: 'line',
-  data: {
-    labels: Array.from({length: n}, (_, i) => i + 1),
-    datasets: [{
-      label: 'Temperature (°C)',
-      data: getLastNValues(tempHistory, n),
-      borderColor: 'red',
-      fill: false,
-      tension: 0.1,
-      pointRadius: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: { x: { display: false } }
-  }
+    type: 'line',
+    data: {
+        labels: Array.from({ length: n }, (_, i) => i + 1),
+        datasets: [{
+            label: 'Temperature (°C)',
+            data: getLastNValues(tempHistory, n),
+            borderColor: 'coral',
+            fill: false,
+            tension: 0.1,
+            pointRadius: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: { display: false },
+            y: {
+                min: -10,
+                max: 50,
+                ticks: { color: '#f0f0f0' }
+            }
+        }
+    }
 });
 
 const humChart = new Chart(ctxHum, {
-  type: 'line',
-  data: {
-    labels: Array.from({length: n}, (_, i) => i + 1),
-    datasets: [{
-      label: 'Humidity (%)',
-      data: getLastNValues(humHistory, n),
-      borderColor: 'blue',
-      fill: false,
-      tension: 0.1,
-      pointRadius: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: { x: { display: false } }
-  }
+    type: 'line',
+    data: {
+        labels: Array.from({ length: n }, (_, i) => i + 1),
+        datasets: [{
+            label: 'Humidity (%)',
+            data: getLastNValues(humHistory, n),
+            borderColor: 'darkcyan',
+            fill: false,
+            tension: 0.1,
+            pointRadius: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: { display: false },
+            y: {
+                min: 0,
+                max: 100,
+                ticks: { color: '#f0f0f0' }
+            }
+        }
+    }
 });
 
 const presChart = new Chart(ctxPres, {
-  type: 'line',
-  data: {
-    labels: Array.from({length: n}, (_, i) => i + 1),
-    datasets: [{
-      label: 'Pressure (hPa)',
-      data: getLastNValues(presHistory, n),
-      borderColor: 'green',
-      fill: false,
-      tension: 0.1,
-      pointRadius: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: { x: { display: false } }
-  }
+    type: 'line',
+    data: {
+        labels: Array.from({ length: n }, (_, i) => i + 1),
+        datasets: [{
+            label: 'Pressure (hPa)',
+            data: getLastNValues(presHistory, n),
+            borderColor: 'MediumSeaGreen',
+            fill: false,
+            tension: 0.1,
+            pointRadius: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: { display: false },
+            y: {
+                min: 900,
+                max: 1100,
+                ticks: { color: '#f0f0f0' }
+            }
+        }
+    }
 });
 
 // Function to update charts when the slider changes
