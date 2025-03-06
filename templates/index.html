@@ -273,167 +273,20 @@
 
   </div>
 
+  <!-- Inline configuration for JS variables -->
+  <script>
+    window.data = {
+      tempHistory: {{ amb_history_temperature | tojson }},
+      humHistory: {{ amb_history_humidity | tojson }},
+      presHistory: {{ amb_history_pressure | tojson }}
+    };
+  </script>
+  
   <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Ensure the socket connection is initialized after the page is loaded
-
-
-    window.onload = function () {
-
-      var socket = io(); // Initialize the Socket.IO connection
-
-      socket.on('mqtt_timestamp_update', function (data) {
-        if (data.timestamp) {
-          document.getElementById("lastTimestamp").innerText = data.timestamp;
-        }
-      });
-
-      socket.on('mqtt_switch_update', function (data) {
-        var switchElement = document.getElementById("toggle");
-
-        switchElement.checked = data.switch === 1;
-        document.getElementById("switchState").innerText = switchElement.checked ? "On" : "Off";
-
-      });
-    };
-
-    // Update the switch label dynamically
-    document.getElementById("toggle").addEventListener("change", function () {
-      document.getElementById("switchState").innerText = this.checked ? "On" : "Off";
-    });
-
-    // Parse history data passed from Flask
-    var tempHistory = {{ amb_history_temperature | tojson }};
-    var humHistory = {{ amb_history_humidity | tojson }};
-    var presHistory = {{ amb_history_pressure | tojson }};
-
-    // Default number of points to display
-    var n = 10;
-
-    // Utility: get the last n values of an array, filling with null if needed
-    function getLastNValues(arr, n) {
-      if (!arr || arr.length === 0) {
-        return Array(n).fill(null);
-      }
-      let result = arr.slice(-n);
-      while (result.length < n) {
-        result.unshift(null);
-      }
-      return result;
-    }
-
-    // Create charts with initial data
-    const ctxTemp = document.getElementById('tempChart').getContext('2d');
-    const ctxHum = document.getElementById('humChart').getContext('2d');
-    const ctxPres = document.getElementById('presChart').getContext('2d');
-
-    const tempChart = new Chart(ctxTemp, {
-      type: 'line',
-      data: {
-        labels: Array.from({ length: n }, (_, i) => i + 1),
-        datasets: [{
-          label: 'Temperature (°C)',
-          data: getLastNValues(tempHistory, n),
-          borderColor: 'coral',
-          fill: false,
-          tension: 0.1,
-          pointRadius: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { display: false },
-          y: {
-            min: -10,
-            max: 50,
-            ticks: { color: '#f0f0f0' }
-          }
-        }
-      }
-    });
-
-    const humChart = new Chart(ctxHum, {
-      type: 'line',
-      data: {
-        labels: Array.from({ length: n }, (_, i) => i + 1),
-        datasets: [{
-          label: 'Humidity (%)',
-          data: getLastNValues(humHistory, n),
-          borderColor: 'darkcyan',
-          fill: false,
-          tension: 0.1,
-          pointRadius: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { display: false },
-          y: {
-            min: 0,
-            max: 100,
-            ticks: { color: '#f0f0f0' }
-          }
-        }
-      }
-    });
-
-    const presChart = new Chart(ctxPres, {
-      type: 'line',
-      data: {
-        labels: Array.from({ length: n }, (_, i) => i + 1),
-        datasets: [{
-          label: 'Pressure (hPa)',
-          data: getLastNValues(presHistory, n),
-          borderColor: 'MediumSeaGreen',
-          fill: false,
-          tension: 0.1,
-          pointRadius: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { display: false },
-          y: {
-            min: 900,
-            max: 1100,
-            ticks: { color: '#f0f0f0' }
-          }
-        }
-      }
-    });
-
-    // Function to update charts when slider changes
-    function updateCharts(newN) {
-      n = newN;
-      let newLabels = Array.from({ length: n }, (_, i) => i + 1);
-      tempChart.data.labels = newLabels;
-      tempChart.data.datasets[0].data = getLastNValues(tempHistory, n);
-      tempChart.update();
-
-      humChart.data.labels = newLabels;
-      humChart.data.datasets[0].data = getLastNValues(humHistory, n);
-      humChart.update();
-
-      presChart.data.labels = newLabels;
-      presChart.data.datasets[0].data = getLastNValues(presHistory, n);
-      presChart.update();
-    }
-
-    // Update displayed slider value and charts on slider input
-    function updateHistoryValue(val) {
-      document.getElementById("historyValue").innerText = val;
-      updateCharts(parseInt(val));
-    }
-
-
-  </script>
+  
+  <!-- External JS file -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 
 </html>
