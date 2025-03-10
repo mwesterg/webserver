@@ -90,7 +90,7 @@ def index():
     global switch_value
     if request.method == "POST":
         # Update the switch value based on form input
-        switch_value = 1 if request.form.get("toggle") == "on" else 0
+        switch_value = 1 if request.form.get("toggle") == "off" else 0
         payload = json.dumps({"switch": switch_value})
         print("Publishing switch value:", payload)
         # Send the timestamp with the data
